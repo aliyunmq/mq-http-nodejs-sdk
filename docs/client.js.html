@@ -271,7 +271,8 @@ class MQClient {
     const headers = {
       'date': date,
       'x-mq-version': '2015-06-06',
-      'content-type': 'text/xml;charset=utf-8'
+      'content-type': 'text/xml;charset=utf-8',
+      'user-agent': 'mq-nodejs-sdk/1.0.0'
     };
 
     if (method !== 'GET' &amp;&amp; method !== 'HEAD') {

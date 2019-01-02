@@ -13,7 +13,7 @@ npm install --save
 
 ## docs
 
-[Documents](./docs/index.html)
+[Documents](https://aliyunmq.github.io/mq-http-nodejs-sdk/)
 
 ## Sample
 

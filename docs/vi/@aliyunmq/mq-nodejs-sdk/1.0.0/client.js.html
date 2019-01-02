@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: client.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: client.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+const assert = require('assert');
+
+const debug = require('debug')('mq:client');
+const httpx = require('httpx');
+const kitx = require('kitx');
+
+const {
+  toXMLBuffer,
+  parseXML,
+  extract,
+  getCanonicalizedMQHeaders
+} = require('./helper');
+
+/**
+ * MQ的client,用于保存aliyun账号消息,以及发送http请求
+ */
+class MQClient {
+  /**
+   * MQClient构造函数
+   * @param {string}  endpoint  MQ的HTTP接入地址
+   * @param {string}  accessKeyId 阿里云账号的AK
+   * @param {string}  accessKeySecret 阿里云账号的SK 
+   * @param {string}  securityToken 阿里云RAM授权的STS TOKEN，可空
+   *
+   * @returns {MQClient}
+   */
+  constructor(endpoint, accessKeyId, accessKeySecret, securityToken) {
+    assert(endpoint, '"endpoint" must be passed in');
+    this.endpoint = endpoint;
+    assert(accessKeyId, 'must pass in "accessKeyId"');
+    this.accessKeyId = accessKeyId;
+    assert(accessKeySecret, 'must pass in "accessKeySecret"');
+    this.accessKeySecret = accessKeySecret;
+    // security token
+    this.securityToken = securityToken;
+  }
+
+  /**
+   * 发送http请求
+   * @param {string}  method HTTP的请求方法GET/PUT/POST/DELETE...
+   * @param {string}  resource  HTTP请求URL的path
+   * @param {string}  type  解析XML响应内容的元素名字
+   * @param {string}  requestBody 请求的body
+   * @param {object}  opts  额外请求的参数
+   *
+   * @returns {object}  
+   * &lt;pre>
+   * {
+   *  code: 200,
+   *  requestId: "xxxxxxxxxxxxxx",
+   *  body: {A:1,B:2,C:3}
+   * }
+   * &lt;/pre>
+   */
+  async request(method, resource, type, requestBody,  opts = {}) {
+    const url = `${this.endpoint}${resource}`;
+    debug('url: %s', url);
+    debug('method: %s', method);
+    const headers = this.buildHeaders(method, requestBody, resource, opts.headers);
+    debug('request headers: %j', headers);
+    debug('request body: %s', requestBody.toString());
+    const response = await httpx.request(url, Object.assign(opts, {
+      method: method,
+      headers: headers,
+      data: requestBody
+    }));
+
+    debug('statusCode %s', response.statusCode);
+    debug('response headers: %j', response.headers);
+    const code = response.statusCode;
+
+    const contentType = response.headers['content-type'] || '';
+    const responseBody = await httpx.read(response, 'utf8');
+    debug('response body: %s', responseBody);
+
+    var body;
+    if (responseBody &amp;&amp; (contentType.startsWith('text/xml') || contentType.startsWith('application/xml'))) {
+      const responseData = await parseXML(responseBody);
+
+      if (responseData.Error) {
+        const e = responseData.Error;
+        const message = extract(e.Message);
+        const requestid = extract(e.RequestId);
+        const hostid = extract(e.HostId);
+        const err = new Error(`${method} ${url} failed with ${code}. ` +
+          `requestid: ${requestid}, hostid: ${hostid}, message: ${message}`);
+        err.name = 'mq-nodejs:' + extract(e.Code) + " " + err.name;
+        throw err;
+      }
+
+      body = {};
+      Object.keys(responseData[type]).forEach((key) => {
+        if (key !== '$') {
+          body[key] = extract(responseData[type][key]);
+        }
+      });
+    }
+
+    return {
+      code,
+      requestId: response.headers['x-mq-request-id'],
+      body: body
+    };
+  }
+
+  /**
+   * 发送HTTP GET请求
+   *
+   * @param {string}  resource  HTTP请求URL的path
+   * @param {string}  type  解析XML响应内容的元素名字
+   * @param {object}  opts  额外请求的参数
+   *
+   * @returns {object}  
+   * &lt;pre>
+   * {
+   *  code: 200,
+   *  requestId: "xxxxxxxxxxxxxx",
+   *  body: {A:1,B:2,C:3}
+   * }
+   * &lt;/pre>
+   */
+  get(resource, type, opts) {
+    return this.request('GET', resource, type, '', opts);
+  }
+
+  /**
+   * 发送HTTP POST请求
+   *
+   * @param {string}  resource  HTTP请求URL的path
+   * @param {string}  type  解析XML响应内容的元素名字
+   * @param {string}  requestBody 请求的body
+   * @returns {object}  
+   * &lt;pre>
+   * {
+   *  code: 200,
+   *  requestId: "xxxxxxxxxxxxxx",
+   *  body: {A:1,B:2,C:3}
+   * }
+   * &lt;/pre>
+   */
+  post(resource, type, body) {
+    return this.request('POST', resource, type, body);
+  }
+
+  /**
+   * 发送HTTP DELETE请求
+   *
+   * @param {string}  resource  HTTP请求URL的path
+   * @param {string}  type  解析XML响应内容的元素名字
+   * @param {string}  requestBody 请求的body
+   * @returns {object}  
+   * &lt;pre>
+   * {
+   *  code: 200,
+   *  requestId: "xxxxxxxxxxxxxx",
+   *  body: {A:1,B:2,C:3}
+   * }
+   * &lt;/pre>
+   */
+  delete(resource, type, body) {
+    return this.request('DELETE', resource, type, body);
+  }
+
+  /**
+   * 对请求的内容按照MQ的HTTP协议签名,sha1+base64
+   * @param {string}  method  请求方法 
+   * @param {object}  headers 请求头
+   * @param {string}  resource  HTTP请求URL的path
+   *
+   * @returns {string} 签名
+   */
+  sign(method, headers, resource) {
+    const canonicalizedMQHeaders = getCanonicalizedMQHeaders(headers);
+    const md5 = headers['content-md5'] || '';
+    const date = headers['date'];
+    const type = headers['content-type'] || '';
+
+    var toSignString = `${method}\n${md5}\n${type}\n${date}\n${canonicalizedMQHeaders}${resource}`;
+    var buff = Buffer.from(toSignString, 'utf8');
+    const degist = kitx.sha1(buff, this.accessKeySecret, 'binary');
+    return Buffer.from(degist, 'binary').toString('base64');
+  }
+
+  /**
+   * 组装请求MQ需要的请求头
+   * @param {string}  method  请求方法
+   * @param {string}  body  请求内容
+   * @param {string}  resource  HTTP请求URL的path
+   *
+   * @returns {object} headers
+   */
+  buildHeaders(method, body, resource) {
+    const date = new Date().toGMTString();
+
+    const headers = {
+      'date': date,
+      'x-mq-version': '2015-06-06',
+      'content-type': 'text/xml;charset=utf-8'
+    };
+
+    if (method !== 'GET' &amp;&amp; method !== 'HEAD') {
+      const digest = kitx.md5(body, 'hex');
+      const md5 = Buffer.from(digest, 'utf8').toString('base64');
+      Object.assign(headers, {
+        'content-length': body.length,
+        'content-md5': md5
+      });
+    }
+
+    const signature = this.sign(method, headers, resource);
+
+    headers['authorization'] = `MQ ${this.accessKeyId}:${signature}`;
+
+    if (this.securityToken) {
+      headers['security-token'] = this.securityToken;
+    }
+
+    return headers;
+  }
+
+  /**
+   * 构造一个MQ的消费者
+   * @param {string}  topic 主题名字
+   * @param {string}  consumer  消费者名字
+   * @param {string}  messageTag  消费的过滤标签，可空
+   *
+   * @returns {MQConsumer}
+   */
+  getConsumer(topic, consumer, messageTag) {
+    return new MQConsumer(this, topic, consumer, messageTag);
+  }
+
+  /**
+   * 构造一个MQ的生产者
+   * @param {string}  topic 主题名字
+   *
+   * @returns {MQProducer}
+   */
+  getProducer(topic) {
+    return new MQProducer(this, topic);
+  }
+}
+
+/**
+ * MQ的消息生产者
+ */
+class MQProducer {
+  /**
+   * 构造函数
+   * @param {MQClient}  client  MQ的客户端
+   * @param {string}  topic 主题名字
+   *
+   * @returns {MQProducer}
+   */
+  constructor(client, topic) {
+    assert(client, '"client" must be passed in');
+    assert(topic, '"topic" must be passed in');
+    this.client = client;
+    this.topic = topic;
+    this.path = `/topics/${topic}/messages`;
+  }
+
+  /**
+   * 向主题发送一条消息
+   * @param {string}  body  发送的内容
+   * @param {string}  tag   发送消息的标签
+   *
+   * @returns {object} 
+   * &lt;pre>
+   * {
+   *  code: 201,
+   *  requestId: "xxxxxxxxxxxxxx",
+   *  body: {
+   *    MesasgeId: "",
+   *    MesasgeBodyMD5: ""
+   *  }
+   * }
+   * &lt;/pre>
+   * @throws {exception}
+   */
+  publishMessage(body, tag) {
+    var body;
+    if (tag) {
+      body = toXMLBuffer('Message', {MessageBody: body, MessageTag: tag});
+    } else {
+      body = toXMLBuffer('Message', {MessageBody: body});
+    }
+    var response = this.client.post(this.path, 'Message', body);
+    return response;
+  }
+
+}
+
+class MQConsumer {
+  constructor(client, topic, consumer, messageTag) {
+    assert(client, '"client" must be passed in');
+    assert(topic, '"topic" must be passed in');
+    assert(consumer, '"consumer" must be passed in');
+    this.client = client;
+    this.topic = topic;
+    this.consumer = consumer;
+    this.messageTag = messageTag;
+    if (messageTag) {
+      this.path = `/topics/${topic}/messages?consumer=${consumer}&amp;tag=${messageTag}`;
+    } else {
+      this.path = `/topics/${topic}/messages?consumer=${consumer}`;
+    }
+    this.ackPath = `/topics/${topic}/messages?consumer=${consumer}`;
+  }
+
+  async consumeMessage(numOfMessages, waitSeconds) {
+    var url = this.path + `&amp;numOfMessages=${numOfMessages}`;
+    if (waitSeconds) {
+      url += `&amp;waitseconds=${waitSeconds}`;
+    }
+
+    const subType = 'Message';
+    var response = await this.client.get(url, 'Messages', {timeout: 33000});
+    response.body = response.body[subType];
+    return response;
+  }
+
+  async ackMessage(receiptHandles) {
+    const body = toXMLBuffer('ReceiptHandles', receiptHandles, 'ReceiptHandle');
+    const response = await this.client.delete(this.ackPath, 'Errors', body);
+    // 3种情况，普通失败，部分失败，全部成功
+    if (response.body) {
+      const subType = 'Error';
+      // 部分失败
+      response.body = response.body[subType];
+    }
+    return response;
+  }
+
+}
+
+module.exports = {
+  MQClient,
+  MQConsumer,
+  MQProducer
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="MQClient.html">MQClient</a></li><li><a href="MQProducer.html">MQProducer</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Wed Nov 14 2018 17:53:32 GMT+0800 (GMT+08:00)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

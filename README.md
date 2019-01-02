@@ -17,10 +17,7 @@ npm install --save
 
 ## Sample
 
-### Publish Message
+[Publish Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/producer.js)
 
-https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/producer.js
+[Consume Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/consumer.js)
 
-### Consume Message
-
-https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/consumer.js

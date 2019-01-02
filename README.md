@@ -6,20 +6,21 @@ Aliyun MQ Console: https://ons.console.aliyun.com
 
 ## Installation
 
+Add dependency `@aliyunmq/mq-http-sdk`
 ```bash
-npm install @aliyunmq/mq-http-sdk --save
+npm install --save
 ```
 
 ## docs
 
 [Documents](./docs/index.html)
 
-## Use 
+## Sample
 
 ### Publish Message
-```node
-```
+
+https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/producer.js
 
 ### Consume Message
-```node
-```
+
+https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/consumer.js

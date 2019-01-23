@@ -6,7 +6,7 @@ Aliyun MQ Console: https://ons.console.aliyun.com
 
 ## Installation
 
-Add dependency `@aliyunmq/mq-http-sdk`
+Add dependency `@aliyunmq/mq-http-sdk`, get the latest version from [npmjs](https://www.npmjs.com/)
 ```bash
 npm install --save
 ```

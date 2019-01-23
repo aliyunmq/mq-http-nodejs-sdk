@@ -10,7 +10,7 @@ Add dependency `@aliyunmq/mq-http-sdk`, get the latest version from [npmjs](http
 ```bash
 npm install --save
 ```
-
+*Note: nodejs >= 7.6.0*
 ## docs
 
 [Documents](https://aliyunmq.github.io/mq-http-nodejs-sdk/)

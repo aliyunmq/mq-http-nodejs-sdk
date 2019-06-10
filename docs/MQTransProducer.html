@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>MQ Nodejs HTTP SDK Documents Class: MQConsumer</title>
+	<title>MQ Nodejs HTTP SDK Documents Class: MQTransProducer</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -65,16 +65,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: MQConsumer</h1>
+	<h1 class="page-title">Class: MQTransProducer</h1>
 <section>
 
 <header>
     
         <h2>
-        MQConsumer
+        MQTransProducer
         </h2>
         
-            <div class="class-description"><p>MQ的消息消费者</p></div>
+            <div class="class-description"><p>MQ的消息生产者，支持事务</p></div>
         
     
 </header>
@@ -86,7 +86,7 @@
         
 <hr>
 <dt>
-    <h4 class="name" id="MQConsumer"><span class="type-signature"></span>new MQConsumer(client, instanceId, topic, consumer, messageTag)</h4>
+    <h4 class="name" id="MQTransProducer"><span class="type-signature"></span>new MQTransProducer(client, instanceId, topic, groupId)</h4>
     
     
 </dt>
@@ -94,7 +94,7 @@
 
     
     <div class="description">
-        <p>消费者构造函数</p>
+        <p>构造函数</p>
     </div>
     
 
@@ -146,7 +146,7 @@
 
             
 
-            <td class="description last"><p>MQ客户端</p></td>
+            <td class="description last"><p>MQ的客户端</p></td>
         </tr>
 
     
@@ -201,7 +201,7 @@
 
         <tr>
             
-                <td class="name"><code>consumer</code></td>
+                <td class="name"><code>groupId</code></td>
             
 
             <td class="type">
@@ -218,31 +218,7 @@
 
             
 
-            <td class="description last"><p>消费者名字(CID)a</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>messageTag</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>消费消息的过滤标签，可空</p></td>
+            <td class="description last"><p>客户端GroupID</p></td>
         </tr>
 
     
@@ -287,7 +263,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="client.js.html">client.js</a>,
-				 <a href="client.js.html#sunlight-1-line-678">line 678</a>
+				 <a href="client.js.html#sunlight-1-line-430">line 430</a>
 			</li>
 		</ul>
 	</dd>
@@ -338,7 +314,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="ackMessage"><span class="type-signature">&lt;async> </span>ackMessage(receiptHandles)</h4>
+    <h4 class="name" id="commit"><span class="type-signature">&lt;async> </span>commit(receiptHandle)</h4>
     
     
 </dt>
@@ -346,7 +322,7 @@
 
     
     <div class="description">
-        <p>确认消息消费成功，消费成功后需要调用该接口否则会重复消费消息</p>
+        <p>提交事务消息</p>
     </div>
     
 
@@ -381,13 +357,13 @@
 
         <tr>
             
-                <td class="name"><code>receiptHandles</code></td>
+                <td class="name"><code>receiptHandle</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">array</span>
+<span class="param-type">string</span>
 
 
 
@@ -398,7 +374,7 @@
 
             
 
-            <td class="description last"><p>消息句柄数组</p></td>
+            <td class="description last"><p>consumeHalfMessage返回的单条消息句柄或者是发送事务消息返回的句柄</p></td>
         </tr>
 
     
@@ -443,7 +419,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="client.js.html">client.js</a>,
-				 <a href="client.js.html#sunlight-1-line-829">line 829</a>
+				 <a href="client.js.html#sunlight-1-line-625">line 625</a>
 			</li>
 		</ul>
 	</dd>
@@ -475,7 +451,7 @@
         <div class="param-desc">
         <p>err 请求失败或者其它网络异常</p>
 <pre class="prettyprint source lang-json"><code>{
- // MQ服务端返回的错误Code，如ReceiptHandleError，表示消息句柄非法，MessageNotExist表示超过了ack的时间，即NextConsumeTime
+ // MQ服务端返回的错误Code，如ReceiptHandleError，表示消息句柄非法，MessageNotExist如果超过了TransCheckImmunityTime（针对发送事务消息的句柄）或者超过NextCnosumeTime
  Code: &quot;&quot;
  // 请求ID
  RequestId: &quot;&quot;
@@ -539,7 +515,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="consumeMessage"><span class="type-signature">&lt;async> </span>consumeMessage(numOfMessages, waitSeconds)</h4>
+    <h4 class="name" id="consumeHalfMessage"><span class="type-signature">&lt;async> </span>consumeHalfMessage(numOfMessages, waitSeconds)</h4>
     
     
 </dt>
@@ -547,7 +523,7 @@
 
     
     <div class="description">
-        <p>消费消息,默认如果该条消息没有被 {ackMessage} 确认消费成功，即在NextConsumeTime时会再次消费到该条消息</p>
+        <p>消费检查事务半消息,默认如果该条消息没有被 {commit} 或者 {rollback} 在NextConsumeTime时会再次消费到该条消息</p>
     </div>
     
 
@@ -668,7 +644,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="client.js.html">client.js</a>,
-				 <a href="client.js.html#sunlight-1-line-762">line 762</a>
+				 <a href="client.js.html#sunlight-1-line-558">line 558</a>
 			</li>
 		</ul>
 	</dd>
@@ -742,13 +718,13 @@
      MessageBodyMD5: &quot;&quot;,
      // 发送消息的时间戳，毫秒
      PublishTime: {long},
-     // 下次重试消费的时间，前提是这次不调用{ackMessage} 确认消费消费成功，毫秒
+     // 下次重试消费的时间，前提是这次不调用{commit} 或者 {rollback}，毫秒
      NextConsumeTime: {long},
      // 第一次消费的时间，毫秒
      FirstConsumeTime: {long},
      // 消费的次数
      ConsumedTimes: {long},
-     // 消息句柄，调用 {ackMessage} 需要将消息句柄传入，用于确认该条消息消费成功
+     // 消息句柄，调用 {commit} 或者 {rollback} 需要将消息句柄传入，用于提交或者回滚该条事务消息
      ReceiptHandle: &quot;&quot;,
      // 消息内容
      MessageBody: &quot;&quot;,
@@ -758,6 +734,465 @@
  ]
 }
 </code></pre>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="publishMessage"><span class="type-signature">&lt;async> </span>publishMessage(body, tag, msgProps)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>向主题发送一条消息</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>body</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>发送的内容</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>tag</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>发送消息的标签</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>msgProps</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="MessageProperties.html">MessageProperties</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>发送消息的属性</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client.js.html">client.js</a>,
+				 <a href="client.js.html#sunlight-1-line-493">line 493</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Throws:</h5>
+    
+            
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>err  MQ服务端返回的错误或者其它网络异常</p>
+<pre class="prettyprint source lang-json"><code>{
+ // MQ服务端返回的错误Code，like: TopicNotExist 
+ Code:&quot;&quot;,
+ // 请求ID
+ RequestId:&quot;&quot;
+}</code></pre>
+        </div>
+    </dt>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">exception</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+</dl>
+
+
+        
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <pre class="prettyprint source lang-json"><code>{
+ // http请求状态码，发送成功就是201，如果发送失败则抛异常
+ code: 201,
+ // 请求ID
+ requestId: &quot;xxxxxxxxxxxxxx&quot;,
+ // 发送消息的响应内容
+ body: {
+   // 消息ID
+   MessageId: &quot;&quot;,
+   // 消息体内容的MD5值
+   MessageBodyMD5: &quot;&quot;
+   // 消息句柄，仅事务消息存在
+   ReceiptHandle: &quot;&quot;
+ }
+}</code></pre>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">object</span>
+
+
+
+    </dd>
+</dl>
+
+
+        
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="rollback"><span class="type-signature">&lt;async> </span>rollback(receiptHandle)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>回滚事务消息</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>receiptHandle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>consumeHalfMessage返回的单条消息句柄或者是发送事务消息返回的句柄</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client.js.html">client.js</a>,
+				 <a href="client.js.html#sunlight-1-line-662">line 662</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+    <h5>Throws:</h5>
+    
+            
+
+<dl>
+    <dt>
+        <div class="param-desc">
+        <p>err 请求失败或者其它网络异常</p>
+<pre class="prettyprint source lang-json"><code>{
+ // MQ服务端返回的错误Code，如ReceiptHandleError，表示消息句柄非法，MessageNotExist如果超过了TransCheckImmunityTime（针对发送事务消息的句柄）或者超过NextCnosumeTime
+ Code: &quot;&quot;
+ // 请求ID
+ RequestId: &quot;&quot;
+}</code></pre>
+        </div>
+    </dt>
+    <dt>
+        <dl>
+            <dt>
+                Type
+            </dt>
+            <dd>
+                
+<span class="param-type">exception</span>
+
+
+
+            </dd>
+        </dl>
+    </dt>
+</dl>
+
+
+        
+
+    
+    <h5>Returns:</h5>
+    
+            
+<div class="param-desc">
+    <pre class="prettyprint source lang-json"><code>{
+ // 请求成功
+ code:204,
+ // 请求ID
+ requestId:&quot;&quot;
+}</code></pre>
 </div>
 
 

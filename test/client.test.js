@@ -3,7 +3,8 @@
 const expect = require('expect.js');
 
 const {
-  MQClient
+  MQClient,
+  MessageProperties
 } = require('../');
 
 const ENDPOINT = process.env.ENDPOINT || 'endpoint';
@@ -40,13 +41,55 @@ describe('mq client test', function () {
   });
 
   describe('API should ok', function () {
-    const groupId = 'GID-abc';
-    const topicName = 'abc';
-    const instanceId = '';
+    const groupId = 'GID-xigu-abc2';
+    const topicName = 'xigu-abc2';
+    const instanceId = 'MQ_INST_1973281269661160_BaWU0TEc';
 
     const client = new MQClient(ENDPOINT, ACCESS_KEY_ID, ACCESS_KEY_SECRET);
     const producer = client.getProducer(instanceId, topicName);
+    const transProducer = client.getTransProducer(instanceId, topicName, groupId);
     const consumer = client.getConsumer(instanceId, topicName, groupId);
+
+    it('message property invalid, key contains \'', function() {
+      var msgProps = new MessageProperties();
+      expect(() => {
+        msgProps.putProperty("abc\'", "123");
+      }).to.throwException();
+    });
+
+    it('message property invalid, key contains \"', function() {
+      var msgProps = new MessageProperties();
+      expect(() => {
+        msgProps.putProperty("abc\"", "123");
+      }).to.throwException();
+    });
+
+    it('message property invalid, key contains <', function() {
+      var msgProps = new MessageProperties();
+      expect(() => {
+        msgProps.putProperty("abc<", "123");
+      }).to.throwException();
+    });
+
+    it('message property invalid, value contains <', function() {
+      var msgProps = new MessageProperties();
+      expect(() => {
+        msgProps.putProperty("abc", "123<");
+      }).to.throwException();
+    });
+
+    it('message property invalid, value contains \'', function() {
+      var msgProps = new MessageProperties();
+      expect(() => {
+        msgProps.putProperty("abc", "123'");
+      }).to.throwException();
+    });
+    it('message property invalid, value contains "', function() {
+      var msgProps = new MessageProperties();
+      expect(() => {
+        msgProps.putProperty("abc", "123\"");
+      }).to.throwException();
+    });
     
     it('publishMessage should ok', async function() {
       const response = await producer.publishMessage('test message');
@@ -64,8 +107,31 @@ describe('mq client test', function () {
       const message = response.body;
       expect(message).to.have.property('MessageId');
       expect(message).to.have.property('MessageBodyMD5');
+    }); 
+
+    it('publishMessage with properties should ok', async function() {
+      var msgProperties = new MessageProperties();
+      msgProperties.putProperty("nodejs", "true");
+      msgProperties.messageKey("I_AM_Message_KEY");
+      const response = await producer.publishMessage('test message, properties', '', msgProperties);
+      expect(response).to.be.ok();
+      expect(response.code).to.be(201);
+      const message = response.body;
+      expect(message).to.have.property('MessageId');
+      expect(message).to.have.property('MessageBodyMD5');
     });
 
+    it('publishMessage timer should ok', async function() {
+      var msgProperties = new MessageProperties();
+      msgProperties.putProperty("nodejs", "true");
+      msgProperties.startDeliverTime(Date.now() + 10 * 1000);
+      const response = await producer.publishMessage('test message, timer+properties', '', msgProperties);
+      expect(response).to.be.ok();
+      expect(response.code).to.be(201);
+      const message = response.body;
+      expect(message).to.have.property('MessageId');
+      expect(message).to.have.property('MessageBodyMD5');
+    });
 
     it('consumeMessage&ackMessage shoule ok', async function() {
       const recived = await consumer.consumeMessage(2, 3);
@@ -100,13 +166,19 @@ describe('mq client test', function () {
       });
     });
 
-    it('publishMessage should ok', async function() {
-      const response = await producer.publishMessage('test message');
+    it('publish transaction msg & commit it', async function() {
+      var msgProperties = new MessageProperties();
+      msgProperties.putProperty("nodejs", "true");
+      msgProperties.transCheckImmunityTime(10);
+      const response = await transProducer.publishMessage('test message, transaction+properties', '', msgProperties);
       expect(response).to.be.ok();
       expect(response.code).to.be(201);
       const message = response.body;
       expect(message).to.have.property('MessageId');
       expect(message).to.have.property('MessageBodyMD5');
+      expect(message).to.have.property('ReceiptHandle');
+      const ackresp = await transProducer.commit(message.ReceiptHandle);
+      expect(ackresp.code).to.be(204);
     });
   });
 });

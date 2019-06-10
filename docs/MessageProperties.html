@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>MQ Nodejs HTTP SDK Documents Class: MQConsumer</title>
+	<title>MQ Nodejs HTTP SDK Documents Class: MessageProperties</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -65,16 +65,16 @@
 		<div id="main">
 			
 
-	<h1 class="page-title">Class: MQConsumer</h1>
+	<h1 class="page-title">Class: MessageProperties</h1>
 <section>
 
 <header>
     
         <h2>
-        MQConsumer
+        MessageProperties
         </h2>
         
-            <div class="class-description"><p>MQ的消息消费者</p></div>
+            <div class="class-description"><p>消息属性</p></div>
         
     
 </header>
@@ -86,169 +86,19 @@
         
 <hr>
 <dt>
-    <h4 class="name" id="MQConsumer"><span class="type-signature"></span>new MQConsumer(client, instanceId, topic, consumer, messageTag)</h4>
+    <h4 class="name" id="MessageProperties"><span class="type-signature"></span>new MessageProperties()</h4>
     
     
 </dt>
 <dd>
 
     
-    <div class="description">
-        <p>消费者构造函数</p>
-    </div>
-    
 
     
 
     
 
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>client</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="MQClient.html">MQClient</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>MQ客户端</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>instanceId</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>实例ID</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>topic</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>主题名字</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>consumer</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>消费者名字(CID)a</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>messageTag</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>消费消息的过滤标签，可空</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
     
 
     
@@ -287,7 +137,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="client.js.html">client.js</a>,
-				 <a href="client.js.html#sunlight-1-line-678">line 678</a>
+				 <a href="client.js.html#sunlight-1-line-269">line 269</a>
 			</li>
 		</ul>
 	</dd>
@@ -338,7 +188,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="ackMessage"><span class="type-signature">&lt;async> </span>ackMessage(receiptHandles)</h4>
+    <h4 class="name" id="getProperties"><span class="type-signature"></span>getProperties()</h4>
     
     
 </dt>
@@ -346,7 +196,7 @@
 
     
     <div class="description">
-        <p>确认消息消费成功，消费成功后需要调用该接口否则会重复消费消息</p>
+        <p>获取消息属性内部的Object</p>
     </div>
     
 
@@ -355,56 +205,6 @@
     
 
     
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>receiptHandles</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">array</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>消息句柄数组</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
     
 
     
@@ -443,7 +243,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="client.js.html">client.js</a>,
-				 <a href="client.js.html#sunlight-1-line-829">line 829</a>
+				 <a href="client.js.html#sunlight-1-line-280">line 280</a>
 			</li>
 		</ul>
 	</dd>
@@ -466,54 +266,11 @@
     
 
     
-    <h5>Throws:</h5>
-    
-            
-
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>err 请求失败或者其它网络异常</p>
-<pre class="prettyprint source lang-json"><code>{
- // MQ服务端返回的错误Code，如ReceiptHandleError，表示消息句柄非法，MessageNotExist表示超过了ack的时间，即NextConsumeTime
- Code: &quot;&quot;
- // 请求ID
- RequestId: &quot;&quot;
-}</code></pre>
-        </div>
-    </dt>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
-                
-<span class="param-type">exception</span>
-
-
-
-            </dd>
-        </dl>
-    </dt>
-</dl>
-
-
-        
 
     
     <h5>Returns:</h5>
     
             
-<div class="param-desc">
-    <pre class="prettyprint source lang-json"><code>{
- // 请求成功
- code:204,
- // 请求ID
- requestId:&quot;&quot;
-}</code></pre>
-</div>
-
 
 
 <dl>
@@ -522,7 +279,7 @@
     </dt>
     <dd>
         
-<span class="param-type">object</span>
+<span class="param-type">Object</span>
 
 
 
@@ -539,7 +296,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id="consumeMessage"><span class="type-signature">&lt;async> </span>consumeMessage(numOfMessages, waitSeconds)</h4>
+    <h4 class="name" id="messageKey"><span class="type-signature"></span>messageKey(key)</h4>
     
     
 </dt>
@@ -547,7 +304,7 @@
 
     
     <div class="description">
-        <p>消费消息,默认如果该条消息没有被 {ackMessage} 确认消费成功，即在NextConsumeTime时会再次消费到该条消息</p>
+        <p>设置消息KEY</p>
     </div>
     
 
@@ -582,13 +339,13 @@
 
         <tr>
             
-                <td class="name"><code>numOfMessages</code></td>
+                <td class="name"><code>key</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">int</span>
+<span class="param-type">string</span>
 
 
 
@@ -599,31 +356,7 @@
 
             
 
-            <td class="description last"><p>每次从服务端消费条消息</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>waitSeconds</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">int</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>长轮询的等待时间（可空），如果服务端没有消息请求会在该时间之后返回等于请求阻塞在服务端，如果期间有消息立刻返回</p></td>
+            <td class="description last"><p>消息KEY</p></td>
         </tr>
 
     
@@ -668,7 +401,7 @@
 		<ul class="dummy">
 			<li>
 				<a href="client.js.html">client.js</a>,
-				 <a href="client.js.html#sunlight-1-line-762">line 762</a>
+				 <a href="client.js.html#sunlight-1-line-288">line 288</a>
 			</li>
 		</ul>
 	</dd>
@@ -691,92 +424,446 @@
     
 
     
-    <h5>Throws:</h5>
+
     
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="putProperty"><span class="type-signature"></span>putProperty(key, value)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>设置消息自定义属性</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>key</code></td>
             
 
-<dl>
-    <dt>
-        <div class="param-desc">
-        <p>err  MQ服务端返回的错误或者其它网络异常<br><code>json
- {
-   // MQ服务端返回的错误Code，其中MessageNotExist是正常现象，表示没有可消费的消息
-   Code: &quot;&quot;,
-   // 请求ID
-   RequestId: &quot;&quot;
- }</code>json</p>
-        </div>
-    </dt>
-    <dt>
-        <dl>
-            <dt>
-                Type
-            </dt>
-            <dd>
+            <td class="type">
+            
                 
-<span class="param-type">exception</span>
+<span class="param-type">string</span>
 
 
 
-            </dd>
-        </dl>
-    </dt>
-</dl>
-
-
-        
-
-    
-    <h5>Returns:</h5>
-    
             
-<div class="param-desc">
-    <pre class="prettyprint source lang-json"><code>{
- code: 200,
- requestId: &quot;&quot;,
- body: [
-   {
-     // 消息ID
-     MessageId: &quot;&quot;,
-     // 消息体MD5
-     MessageBodyMD5: &quot;&quot;,
-     // 发送消息的时间戳，毫秒
-     PublishTime: {long},
-     // 下次重试消费的时间，前提是这次不调用{ackMessage} 确认消费消费成功，毫秒
-     NextConsumeTime: {long},
-     // 第一次消费的时间，毫秒
-     FirstConsumeTime: {long},
-     // 消费的次数
-     ConsumedTimes: {long},
-     // 消息句柄，调用 {ackMessage} 需要将消息句柄传入，用于确认该条消息消费成功
-     ReceiptHandle: &quot;&quot;,
-     // 消息内容
-     MessageBody: &quot;&quot;,
-     // 消息标签
-     MessageTag: &quot;&quot;
-   }
- ]
-}
-</code></pre>
-</div>
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>属性键,非空</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>value</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
 
 
 
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">object</span>
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>属性值,非空</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
 
 
 
-    </dd>
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client.js.html">client.js</a>,
+				 <a href="client.js.html#sunlight-1-line-326">line 326</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
 </dl>
 
 
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
         
+            
+<hr>
+<dt>
+    <h4 class="name" id="startDeliverTime"><span class="type-signature"></span>startDeliverTime(timeMillis)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>定时消息，单位毫秒（ms），在指定时间戳（当前时间之后）进行投递。<br>如果被设置成当前时间戳之前的某个时刻，消息将立刻投递给消费者</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timeMillis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>定时的绝对时间戳</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client.js.html">client.js</a>,
+				 <a href="client.js.html#sunlight-1-line-301">line 301</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+</dd>
+
+        
+            
+<hr>
+<dt>
+    <h4 class="name" id="transCheckImmunityTime"><span class="type-signature"></span>transCheckImmunityTime(timeSeconds)</h4>
+    
+    
+</dt>
+<dd>
+
+    
+    <div class="description">
+        <p>在消息属性中添加第一次消息回查的最快时间，单位秒，并且表征这是一条事务消息</p>
+    </div>
+    
+
+    
+
+    
+
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>timeSeconds</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>第一次消息回查时间，单位秒</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+    
+
+    
+<dl class="details">
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+	<dt class="tag-source method-doc-label method-doc-details-label">Source:</dt>
+	<dd class="tag-source">
+		<ul class="dummy">
+			<li>
+				<a href="client.js.html">client.js</a>,
+				 <a href="client.js.html#sunlight-1-line-313">line 313</a>
+			</li>
+		</ul>
+	</dd>
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
 
     
 </dd>

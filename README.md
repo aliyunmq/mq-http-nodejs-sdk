@@ -17,12 +17,12 @@ npm install --save
 
 ## Sample
 
-### V1.0.0 Samples
+### V1.0.1 Samples
 [Publish Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/producer.js)
 
 [Consume Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/consumer.js)
 
-### V1.0.1 Samples
+### V1.0.2 Samples
 [Publish Message](https://github.com/aliyunmq/mq-http-samples/tree/101-dev/nodejs/producer.js)
 
 [Consume Message](https://github.com/aliyunmq/mq-http-samples/tree/101-dev/nodejs/consumer.js)

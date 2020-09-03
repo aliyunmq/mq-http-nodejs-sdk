@@ -10,7 +10,8 @@ const {
   toXMLBuffer,
   parseXML,
   extract,
-  getCanonicalizedMQHeaders
+  getCanonicalizedMQHeaders,
+  processMsgProperties
 } = require('./helper');
 
 /**
@@ -199,7 +200,7 @@ class MQClient {
       'date': date,
       'x-mq-version': '2015-06-06',
       'content-type': 'text/xml;charset=utf-8',
-      'user-agent': 'mq-nodejs-sdk/1.0.0'
+      'user-agent': 'mq-nodejs-sdk/1.0.3'
     };
 
     if (method !== 'GET' && method !== 'HEAD') {
@@ -314,6 +315,19 @@ class MessageProperties {
       return;
     }
     this.properties["__TransCheckT"] = timeSeconds + "";
+  }
+
+  /**
+   * 分区顺序消息中区分不同分区的关键字段，sharding key 于普通消息的 key 是完全不同的概念。
+   * 全局顺序消息，该字段可以设置为任意非空字符串。
+   * 
+   * @param {string} key 分区键值
+   */
+  shardingKey(key) {
+    if (key == null) {
+      return;
+    }
+    this.properties["__SHARDINGKEY"] = key + "";
   }
 
   /**
@@ -524,7 +538,7 @@ class MQTransProducer {
    *      PublishTime: {long},
    *      // 下次重试消费的时间，前提是这次不调用{commit} 或者 {rollback}，毫秒
    *      NextConsumeTime: {long},
-   *      // 第一次消费的时间，毫秒
+   *      // 第一次消费的时间，毫秒，对于顺序消费无意义
    *      FirstConsumeTime: {long},
    *      // 消费的次数
    *      ConsumedTimes: {long},
@@ -559,34 +573,7 @@ class MQTransProducer {
     var response = await this.client.get(url, 'Messages', { timeout: 33000 });
     response.body = response.body[subType];
     response.body.forEach(msg => {
-      var props = {};
-      if (msg.Properties) {
-        var props = {};
-        var kvArray = msg.Properties.split('|');
-        for (var i = 0; i < kvArray.length; i++) {
-          if (kvArray[i] == '') {
-            continue;
-          }
-          var kAndV = kvArray[i].split(':');
-          if (kAndV.length != 2 || kAndV[0] == '' || kAndV[1] == '') {
-            continue;
-          }
-          props[kAndV[0]] = kAndV[1];
-        }
-        if (props['KEYS']) {
-          msg.MessageKey = props['KEYS'];
-          delete props['KEYS'];
-        }
-        if (props['__STARTDELIVERTIME']) {
-          msg.StartDeliverTime = parseInt(props['__STARTDELIVERTIME']);
-          delete props['__STARTDELIVERTIME'];
-        }
-        if (props['__TransCheckT']) {
-          msg.StartDeliverTime = parseInt(props['__TransCheckT']);
-          delete props['__TransCheckT'];
-        }
-      }
-      msg.Properties = props;
+      processMsgProperties(msg);
     });
     return response;
   }
@@ -689,17 +676,19 @@ class MQConsumer {
     this.instanceId = instanceId;
     this.topic = topic;
     this.consumer = consumer;
-    this.messageTag = messageTag;
+    if (messageTag) {
+      this.messageTag = encodeURIComponent(messageTag);
+    }
     if (instanceId && instanceId !== '') {
-      if (messageTag) {
-        this.path = `/topics/${topic}/messages?consumer=${consumer}&ns=${instanceId}&tag=${messageTag}`;
+      if (this.messageTag) {
+        this.path = `/topics/${topic}/messages?consumer=${consumer}&ns=${instanceId}&tag=${this.messageTag}`;
       } else {
         this.path = `/topics/${topic}/messages?consumer=${consumer}&ns=${instanceId}`;
       }
       this.ackPath = `/topics/${topic}/messages?consumer=${consumer}&ns=${instanceId}`;
     } else {
-      if (messageTag) {
-        this.path = `/topics/${topic}/messages?consumer=${consumer}&tag=${messageTag}`;
+      if (this.messageTag) {
+        this.path = `/topics/${topic}/messages?consumer=${consumer}&tag=${this.messageTag}`;
       } else {
         this.path = `/topics/${topic}/messages?consumer=${consumer}`;
       }
@@ -763,34 +752,71 @@ class MQConsumer {
     var response = await this.client.get(url, 'Messages', { timeout: 33000 });
     response.body = response.body[subType];
     response.body.forEach(msg => {
-      var props = {};
-      if (msg.Properties) {
-        var props = {};
-        var kvArray = msg.Properties.split('|');
-        for (var i = 0; i < kvArray.length; i++) {
-          if (kvArray[i] == '') {
-            continue;
-          }
-          var kAndV = kvArray[i].split(':');
-          if (kAndV.length != 2 || kAndV[0] == '' || kAndV[1] == '') {
-            continue;
-          }
-          props[kAndV[0]] = kAndV[1];
-        }
-        if (props['KEYS']) {
-          msg.MessageKey = props['KEYS'];
-          delete props['KEYS'];
-        }
-        if (props['__STARTDELIVERTIME']) {
-          msg.StartDeliverTime = parseInt(props['__STARTDELIVERTIME']);
-          delete props['__STARTDELIVERTIME'];
-        }
-        if (props['__TransCheckT']) {
-          msg.StartDeliverTime = parseInt(props['__TransCheckT']);
-          delete props['__TransCheckT'];
-        }
-      }
-      msg.Properties = props;
+      processMsgProperties(msg);
+    });
+    return response;
+  }
+
+  /**
+   * 顺序消费消息,拿到的消息可能是多个分区的（对于分区顺序）一个分区的内的消息一定是顺序的
+   * 对于顺序消费，如果一个分区内的消息只要有没有被确认消费 {ackMessage} 成功，则对于这个分区在NextConsumeTime后还会消费到相同的消息
+   * 对于一个分区，只有所有消息确认消费成功才能消费下一批消息
+   *
+   * @param {int} numOfMessages 每次从服务端消费条消息
+   * @param {int} waitSeconds 长轮询的等待时间（可空），如果服务端没有消息请求会在该时间之后返回等于请求阻塞在服务端，如果期间有消息立刻返回
+   *
+   * @returns {object}
+   * ```json
+   * {
+   *  code: 200,
+   *  requestId: "",
+   *  body: [
+   *    {
+   *      // 消息ID
+   *      MessageId: "",
+   *      // 消息体MD5
+   *      MessageBodyMD5: "",
+   *      // 发送消息的时间戳，毫秒
+   *      PublishTime: {long},
+   *      // 下次重试消费的时间，前提是这次不调用{ackMessage} 确认消费消费成功，毫秒
+   *      NextConsumeTime: {long},
+   *      // 第一次消费的时间，毫秒，顺序消费无意义
+   *      FirstConsumeTime: {long},
+   *      // 消费的次数
+   *      ConsumedTimes: {long},
+   *      // 消息句柄，调用 {ackMessage} 需要将消息句柄传入，用于确认该条消息消费成功
+   *      ReceiptHandle: "",
+   *      // 消息内容
+   *      MessageBody: "",
+   *      // 消息标签
+   *      MessageTag: ""
+   *    }
+   *  ]
+   * }
+   *
+   * ```
+   * @throws {exception} err  MQ服务端返回的错误或者其它网络异常
+   * ```json
+   *  {
+   *    // MQ服务端返回的错误Code，其中MessageNotExist是正常现象，表示没有可消费的消息
+   *    Code: "",
+   *    // 请求ID
+   *    RequestId: ""
+   *  }
+   * ```json
+   */
+  async consumeMessageOrderly(numOfMessages, waitSeconds) {
+    var url = this.path + `&numOfMessages=${numOfMessages}`;
+    if (waitSeconds) {
+      url += `&waitseconds=${waitSeconds}`;
+    }
+    url += `&trans=order`;
+
+    const subType = 'Message';
+    var response = await this.client.get(url, 'Messages', { timeout: 33000 });
+    response.body = response.body[subType];
+    response.body.forEach(msg => {
+      processMsgProperties(msg);
     });
     return response;
   }

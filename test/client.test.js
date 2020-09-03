@@ -43,7 +43,7 @@ describe('mq client test', function () {
   describe('API should ok', function () {
     const groupId = 'GID-xigu-abc2';
     const topicName = 'xigu-abc2';
-    const instanceId = 'MQ_INST_1973281269661160_BaWU0TEc';
+    const instanceId = 'MQ_INST_1973281269661160_Ba2DmovE';
 
     const client = new MQClient(ENDPOINT, ACCESS_KEY_ID, ACCESS_KEY_SECRET);
     const producer = client.getProducer(instanceId, topicName);

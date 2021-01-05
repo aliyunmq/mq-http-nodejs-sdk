@@ -15,29 +15,30 @@ npm install --save
 
 [Documents](https://aliyunmq.github.io/mq-http-nodejs-sdk/)
 
-## Sample
+## Note
+1. Http consumer only support timer msg (less than 3 days), no matter the msg is produced from http or tcp protocol.
+2. Order is only supported at special server cluster.
 
-### V1.0.1 Samples
+## Sample (github)
+
 [Publish Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/producer.js)
 
 [Consume Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/consumer.js)
 
-### V1.0.2 Samples
-[Publish Message](https://github.com/aliyunmq/mq-http-samples/tree/101-dev/nodejs/producer.js)
+[Transaction Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/trans-producer.js)
 
-[Consume Message](https://github.com/aliyunmq/mq-http-samples/tree/101-dev/nodejs/consumer.js)
+[Publish Order Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/order-producer.js)
 
-[Transaction Message](https://github.com/aliyunmq/mq-http-samples/tree/101-dev/nodejs/trans-producer.js)
+[Consume Order Message](https://github.com/aliyunmq/mq-http-samples/blob/master/nodejs/order-consumer.js)
 
-### V1.0.3 Samples
-[Publish Message](https://github.com/aliyunmq/mq-http-samples/tree/103-dev/nodejs/producer.js)
+## Sample (code.aliyun.com)
 
-[Consume Message](https://github.com/aliyunmq/mq-http-samples/tree/103-dev/nodejs/consumer.js)
+[Publish Message](https://code.aliyun.com/aliware_rocketmq/mq-http-samples/blob/master/nodejs/producer.js)
 
-[Transaction Message](https://github.com/aliyunmq/mq-http-samples/tree/103-dev/nodejs/trans-producer.js)
+[Consume Message](https://code.aliyun.com/aliware_rocketmq/mq-http-samples/blob/master/nodejs/consumer.js)
 
-[Publish Order Message](https://github.com/aliyunmq/mq-http-samples/tree/103-dev/nodejs/order-producer.js)
+[Transaction Message](https://code.aliyun.com/aliware_rocketmq/mq-http-samples/blob/master/nodejs/trans-producer.js)
 
-[Consume Order Message](https://github.com/aliyunmq/mq-http-samples/tree/103-dev/nodejs/order-consumer.js)
+[Publish Order Message](https://code.aliyun.com/aliware_rocketmq/mq-http-samples/blob/master/nodejs/order-producer.js)
 
-Note: Http consumer only support timer msg(less than 3 days), no matter the msg is produced from http or tcp protocol.
+[Consume Order Message](https://code.aliyun.com/aliware_rocketmq/mq-http-samples/blob/master/nodejs/order-consumer.js)

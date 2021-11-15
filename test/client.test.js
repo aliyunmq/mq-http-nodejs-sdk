@@ -133,6 +133,16 @@ describe('mq client test', function () {
       expect(message).to.have.property('MessageBodyMD5');
     });
 
+    it('publishMessage with & should ok', async function() {
+      var msgProperties = new MessageProperties();
+      const response = await producer.publishMessage('test message with &', '', msgProperties);
+      expect(response).to.be.ok();
+      expect(response.code).to.be(201);
+      const message = response.body;
+      expect(message).to.have.property('MessageId');
+      expect(message).to.have.property('MessageBodyMD5');
+    });
+
     it('consumeMessage&ackMessage shoule ok', async function() {
       const recived = await consumer.consumeMessage(2, 3);
       expect(recived).to.be.ok();

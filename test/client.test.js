@@ -180,5 +180,15 @@ describe('mq client test', function () {
       const ackresp = await transProducer.commit(message.ReceiptHandle);
       expect(ackresp.code).to.be(204);
     });
+
+    it('publishMessage with & should ok', async function() {
+      var msgProperties = new MessageProperties();
+      const response = await producer.publishMessage('test message with &', '', msgProperties);
+      expect(response).to.be.ok();
+      expect(response.code).to.be(201);
+      const message = response.body;
+      expect(message).to.have.property('MessageId');
+      expect(message).to.have.property('MessageBodyMD5');
+    });
   });
 });

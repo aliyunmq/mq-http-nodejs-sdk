@@ -200,7 +200,7 @@ class MQClient {
       'date': date,
       'x-mq-version': '2015-06-06',
       'content-type': 'text/xml;charset=utf-8',
-      'user-agent': 'mq-nodejs-sdk/1.0.3'
+      'user-agent': 'mq-nodejs-sdk/1.0.4'
     };
 
     if (method !== 'GET' && method !== 'HEAD') {
